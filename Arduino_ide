@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title> Arduino IDE 1.0</title>
+    <style>
+        body { background-color: #1e1e1e; color: #ffffff; font-family: 'Consolas', monospace; margin: 0; padding: 15px; }
+        .toolbar { background-color: #2d2d2d; padding: 10px; border-radius: 5px 5px 0 0; display: flex; align-items: center; gap: 15px; border-bottom: 2px solid #00979d; }
+        .project-bar { background-color: #222; padding: 8px; display: flex; gap: 10px; border-left: 1px solid #2d2d2d; border-right: 1px solid #2d2d2d; }
+        .logo { color: #00979d; font-weight: bold; font-size: 18px; margin-right: 20px; }
+        .btn { background-color: #3e3e3e; color: #ffffff; border: 2px solid #555; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+        .btn:hover { background-color: #00979d; border-color: #00ca00; }
+        .btn-save { background-color: #00979d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .btn-template { background-color: #333; color: #57b980; border: 1px solid #555; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .btn-template:hover { color: #00ff00; border-color: #00ff00; }
+        textarea { width: 100%; height: 380px; background-color: #1a1a1a; color: #57b980; border: 1px solid #2d2d2d; padding: 15px; box-sizing: border-box; font-size: 16px; resize: none; outline: none; }
+        .console { background-color: #0f0f0f; border: 1px solid #2d2d2d; height: 120px; padding: 10px; overflow-y: auto; color: #888; font-size: 14px; border-radius: 0 0 5px 5px; }
+        .info-text { color: #00ff00; }
+        .white-text { color: #ffffff; }
+        .error-text { color: #ff5555; }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="logo">в™ѕ</div>
+        <button class="btn" onclick="compileCode()">вњ“</button>
+        <button class="btn" onclick="uploadCode()">вћ”</button>
+        <button class="btn-save" onclick="saveAsInoFile()">в†“</button>
+        <span style="color: #888; font-size: 14px; margin-left: auto;">Arduino Nano</span>
+    </div>
+
+    <div class="project-bar">
+        <span style="color: #888; font-size: 13px; padding-top: 4px;">Rady code!</span>
+        <button class="btn-template" onclick="loadTemplate('hello')">1. Hello Text</button>
+        <button class="btn-template" onclick="loadTemplate('dvd')">2. DVD Screensaver</button>
+        <button class="btn-template" onclick="loadTemplate('minecraft')">3. Minecraft Sweden</button>
+    </div>
+
+    <div class="editor-container">
+        <textarea id="codeEditor" spellcheck="false">// Select code template above!</textarea>
+    </div>
+
+    <div id="ideConsole" class="console">
+        The system is ready for use. Version 1.0
+    </div>
+
+    <script>
+        var consoleBox = document.getElementById("ideConsole");
+        var editor = document.getElementById("codeEditor");
+
+        var codes = {
+            hello: "#include <Adafruit_GFX.h>\n#include <Adafruit_ST7735.h>\n#include <SPI.h>\n#define TFT_CS 10\n#define TFT_RST 8\n#define TFT_DC 9\nAdafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);\nvoid setup() {\n  tft.initR(INITR_BLACKTAB); tft.setRotation(1); tft.fillScreen(ST7735_BLACK);\n  tft.setCursor(20, 50); tft.setTextColor(ST7735_GREEN); tft.setTextSize(3); tft.print(\"Hello\");\n}\nvoid loop() {}",
+            dvd: "#include <Adafruit_GFX.h>\n#include <Adafruit_ST7735.h>\n#include <SPI.h>\n#define TFT_CS 10\n#define TFT_RST 8\n#define TFT_DC 9\nAdafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);\nconst int dvdW = 58; const int dvdH = 24;\nint imgX = 30; int imgY = 40; int speedX = 1; int speedY = 1;\nuint16_t colors[] = {ST7735_YELLOW, ST7735_GREEN, ST7735_RED, ST7735_BLUE, ST7735_MAGENTA, ST7735_CYAN};\nint colorIndex = 0;\nvoid setup() {\n  tft.initR(INITR_BLACKTAB); tft.setRotation(1); tft.fillScreen(ST7735_BLACK); tft.drawRect(5, 5, 150, 118, ST7735_WHITE);\n}\nvoid loop() {\n  int oldX = imgX; int oldY = imgY; imgX += speedX; imgY += speedY; bool hit = false;\n  if (imgX <= 6 || imgX >= (155 - dvdW)) { speedX = -speedX; hit = true; }\n  if (imgY <= 6 || imgY >= (122 - dvdH)) { speedY = -speedY; hit = true; }\n  if (hit) { colorIndex++; if (colorIndex >= 6) colorIndex = 0; }\n  if (imgX > oldX) tft.drawFastVLine(oldX, oldY, dvdH, ST7735_BLACK);\n  else if (imgX < oldX) tft.drawFastVLine(oldX + dvdW - 1, oldY, dvdH, ST7735_BLACK);\n  if (imgY > oldY) tft.drawFastHLine(oldX, oldY, dvdW, ST7735_BLACK);\n  else if (imgY < oldY) tft.drawFastHLine(oldX, oldY + dvdH - 1, dvdW, ST7735_BLACK);\n  tft.setTextSize(3); tft.setTextColor(colors[colorIndex]); tft.setCursor(imgX, imgY); tft.print(\"DVD\"); delay(15);\n}",
+            minecraft: "#include <Adafruit_GFX.h>\n#include <Adafruit_ST7735.h>\n#include <SPI.h>\n#define TFT_CS 10\n#define TFT_RST 8\n#define TFT_DC 9\n#define BUZZER 5\nAdafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);\n#define NOTE_D4 294\n#define NOTE_E4 330\n#define NOTE_FS4 370\n#define NOTE_A4 440\n#define NOTE_B4 494\n#define NOTE_D5 587\n#define NOTE_E5 659\nint melody[] = {NOTE_A4, NOTE_B4, NOTE_FS4, NOTE_D4, NOTE_E4, NOTE_FS4, NOTE_FS4, NOTE_A4, NOTE_E4, NOTE_D5, NOTE_B4, NOTE_A4, NOTE_FS4, NOTE_D4, NOTE_E4, NOTE_FS4, NOTE_A4, NOTE_FS4, NOTE_E4};\nint noteDurations[] = {800, 800, 1600, 600, 600, 600, 600, 800, 2000, 800, 800, 1600, 600, 600, 600, 600, 600, 600, 2500};\nvoid setup() {\n  tft.initR(INITR_BLACKTAB); tft.setRotation(1); tft.fillScreen(ST7735_BLACK);\n  tft.fillRect(0, 0, 160, 20, 0x3A45); tft.setTextColor(ST7735_WHITE); tft.setTextSize(1);\n  tft.setCursor(35, 6); tft.print(\"MINECRAFT PLAYER\");\n  tft.setTextColor(ST7735_GREEN); tft.setCursor(15, 50); tft.print(\"Song: C418 - Sweden\");\n}\nvoid loop() {\n  tft.fillRect(15, 90, 130, 15, ST7735_BLACK); tft.setTextColor(ST7735_YELLOW); tft.setCursor(15, 90); tft.print(\"Playing intro...\"); tft.fillRect(15, 75, 140, 4, ST7735_BLACK);\n  for (int thisNote = 0; thisNote < 19; thisNote++) {\n    tone(BUZZER, melody[thisNote], noteDurations[thisNote]);\n    tft.fillRect(15, 75, thisNote * 7 + 7, 4, ST7735_GREEN);\n    int pauseBetweenNotes = noteDurations[thisNote] * 1.15;\n    delay(pauseBetweenNotes); noTone(BUZZER);\n  }\n  tft.fillRect(15, 90, 130, 15, ST7735_BLACK); tft.setCursor(15, 90); tft.setTextColor(ST7735_WHITE); tft.print(\"Waiting next loop...\"); delay(3000);\n}"
+        };
+
+        function loadTemplate(name) {
+            editor.value = codes[name];
+            consoleBox.innerHTML = "<span class='info-text'>Deleting file System32</span>";
+        }
+
+        function saveAsInoFile() {
+            var codeText = editor.value;
+            var blob = new Blob([codeText], { type: "text/plain;charset=utf-8" });
+            var downloadLink = document.createElement("a");
+            downloadLink.download = "Code_Web_Arduino_Ide.ino"; 
+            downloadLink.href = window.URL.createObjectURL(blob);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            consoleBox.innerHTML = "<span class='info-text'>Your file has been uploaded successfully</span>";
+        }
+
+        function compileCode() {
+            consoleBox.innerHTML = "<span class='white-text'>....</span><br>";
+            setTimeout(function() {
+                consoleBox.innerHTML += "<span class='error-text'>Error</span>";
+            }, 1000);
+        }
+
+        function uploadCode() {
+            consoleBox.innerHTML = "<span class='white-text'>Accessing https://www.scrach...</span><br>";
+            setTimeout(function() {
+                consoleBox.innerHTML += "<span class='white-text'>Accessing https://www.arduino_converter...</span><br><span class='error-text'>Error 404</span><br><span class='error-text'> No internet connection!</span>";
+            }, 1200);
+        }
+    </script>
+
+</body>
+</html>
